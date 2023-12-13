@@ -380,6 +380,7 @@ const getSpecificProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
+    console.log(req.body)
     const Id = req.params.id;
     const imageGalleryFiles = req.files;
     const productToUpdate = await Product.findById(Id);
