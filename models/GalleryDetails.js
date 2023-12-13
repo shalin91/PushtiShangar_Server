@@ -17,7 +17,7 @@ const gallarySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  galleryCategory: {type: mongoose.Schema.Types.ObjectId , ref : "gallary_master"},
+  galleryCategory: {type: String , ref : "gallary_master"},
   deleted: {
     type: Boolean,
     default: false,

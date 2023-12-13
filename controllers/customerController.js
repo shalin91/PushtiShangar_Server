@@ -354,13 +354,8 @@ const resetCustomerPassword = async (req, res) => {
 const DeleteCustomer = async (req, res, next) => {
   try {
     const customerId = req.body.id;
-    const record = await Customer.findByIdAndUpdate(
+    const record = await Customer.findByIdAndDelete(
       customerId,
-      {
-        deleted: true,
-        deletedAt: new Date(),
-      },
-      { new: true }
     );
 
     if (!record) {

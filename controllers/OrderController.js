@@ -95,7 +95,6 @@ exports.createOrder = async (req, res, next) => {
       isInvoiceGenrated:updatedInvoice?true:false,
       invoiceNumber:updatedInvoice.lattestInvoice,
       invoiceGenrationDate: new Date()
-
       // giftVoucher: giftVoucher,
     });
     
