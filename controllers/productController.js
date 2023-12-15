@@ -381,6 +381,41 @@ const updateProduct = async (req, res) => {
       return res.send({ error: "SubSubCategory not found" });
     }
 
+    const productDataTest = {
+      name: name,
+      description: description,
+      category: category,
+      subCategory: subCategory,
+      subSubCategory: subSubCategory,
+      tags: tags,
+      prices: {
+        original: original,
+        discounted: discounted,
+        calculatedPrice: calculatedPrice,
+      },
+      imageGallery: imageGallery,
+      stock: { quantity: stock },
+      hsnCode: hsnCode,
+      size: size,
+      shippingCharge: shippingCharge,
+      gst: gst,
+      sku: sku,
+      calculationOnWeight: calculationOnWeight,
+      weightType: weightType,
+      weight: weight,
+      laborCost: laborCost,
+      discountOnLaborCost: discountOnLaborCost ? discountOnLaborCost : null,
+      isActive: isActive,
+      isProductPopular: isProductPopular,
+      isProductNew: isProductNew,
+      filters: filters,
+      color: color,
+      material: material,
+      season: season,
+      isVariant: true,
+      productColor: productColor,
+      productSize: productSize,
+    };
     const productData = {
       name: req.body.name,
       description: req.body.description,
@@ -388,23 +423,28 @@ const updateProduct = async (req, res) => {
       subCategory: req.body.subCategory,
       subSubCategory: req.body.subSubCategory ? req.body.subSubCategory : null,
       prices: { original: req.body.original, discounted: req.body.discounted },
-      imageGallery: req.body.imageGallery|| [],
+      imageGallery: req.body.imageGallery || [],
       stock: { quantity: req.body.stock },
       sku: req.body.sku,
       gst: req.body.gst,
       isProductPopular: req.body.isProductPopular,
       isProductNew: req.body.isProductNew,
       isActive: req.body.isActive,
+      filters: filters,
+      color: color,
+      material: material,
+      season: season,
+      productColor: productColor,
+      productSize: productSize,
     };
+
+   
 
     const addedImages = imageGalleryFiles.map((file) => file.filename);
     if (addedImages.length > 0) {
-      
-      console.log(productData.imageGallery,"_______________________")
-
-      console.log(addedImages,"_______________________")
       productData.imageGallery = productData.imageGallery.concat(addedImages);
     }
+    console.log(req.body)
     await Product.findByIdAndUpdate(Id, productData);
     const UpdatedProduct = await Product.findById(Id);
 
