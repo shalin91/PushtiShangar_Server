@@ -144,13 +144,6 @@ const addVarProduct = async (req, res, next) => {
 
   const imageGalleryFiles = req.files;
 
-  // if (!imageGalleryFiles || imageGalleryFiles.length === 0) {
-  //   return res.status(400).send({
-  //     success: false,
-  //     error: "Main image and image gallery files are required.",
-  //   });
-  // }
-
   const imageGallery = imageGalleryFiles.map((file) => file.filename);
 
   let calculatedPrice = 0;
@@ -380,7 +373,6 @@ const getSpecificProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    console.log(req.body)
     const Id = req.params.id;
     const imageGalleryFiles = req.files;
     const productToUpdate = await Product.findById(Id);
@@ -388,6 +380,7 @@ const updateProduct = async (req, res) => {
     if (!productToUpdate) {
       return res.send({ error: "SubSubCategory not found" });
     }
+
     const productData = {
       name: req.body.name,
       description: req.body.description,
@@ -395,7 +388,7 @@ const updateProduct = async (req, res) => {
       subCategory: req.body.subCategory,
       subSubCategory: req.body.subSubCategory ? req.body.subSubCategory : null,
       prices: { original: req.body.original, discounted: req.body.discounted },
-      imageGallery: req.body.imageGallery,
+      imageGallery: req.body.imageGallery|| [],
       stock: { quantity: req.body.stock },
       sku: req.body.sku,
       gst: req.body.gst,
@@ -405,13 +398,13 @@ const updateProduct = async (req, res) => {
     };
 
     const addedImages = imageGalleryFiles.map((file) => file.filename);
-
     if (addedImages.length > 0) {
+      
+      console.log(productData.imageGallery,"_______________________")
+
+      console.log(addedImages,"_______________________")
       productData.imageGallery = productData.imageGallery.concat(addedImages);
     }
-
-    console.log(addedImages);
-
     await Product.findByIdAndUpdate(Id, productData);
     const UpdatedProduct = await Product.findById(Id);
 
@@ -481,9 +474,6 @@ const getProductsByTag = async (req, res) => {
     return res.send({ success: false, error: error });
   }
 };
-
-
-
 
 module.exports = {
   getAllProducts,
