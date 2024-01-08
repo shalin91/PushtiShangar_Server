@@ -6,7 +6,8 @@ exports.addSubSubCategory = async (req, res, next) => {
     const body = {
       name: req.body.name, 
       Category: req.body.Category, 
-      SubCategory: req.body.SubCategory, 
+      SubCategory: req.body.SubCategory,
+      isActive: req.body.isActive,
     };
 
     const newSubSubCategory = await SubSubCategory.create(body);
@@ -104,6 +105,7 @@ exports.updateSubSubCategoryById = async (req, res, next) => {
       name: req.body.name,
       Category: req.body.Category, 
       SubCategory: req.body.SubCategory,
+      isActive: req.body.isActive,
     };
 
     await SubSubCategory.findByIdAndUpdate(subSubCategoryId, updateData);

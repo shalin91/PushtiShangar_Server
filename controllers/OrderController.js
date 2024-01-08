@@ -10,9 +10,7 @@ const Category = require('../models/ProductCat');
 exports.getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find().lean();
-    if (orders.length === 0) {
-      return res.end();
-    }
+    
     return res.send({ orders });
   } catch (error) {
     return res.send({ error: error.message });

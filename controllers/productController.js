@@ -5,6 +5,9 @@ const PriceUpdate = require("../models/PriceUpdate");
 const Color = require("../models/Color");
 const Material = require("../models/Material");
 const Season = require("../models/Season");
+const subCategory = require("../models/ProductSubCat");
+const subSubCategory = require("../models/ProductSubSubCat");
+
 
 // Create Product
 const addProduct = async (req, res, next) => {
@@ -294,6 +297,7 @@ const getAllProductsForTable = async (req, res) => {
           isProductNew: 1,
           weight: 1,
           imageGallery: 1,
+          isVariant: 1,
         },
       },
     ]);
@@ -380,44 +384,124 @@ const getSpecificProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    console.log(req.body)
+    // console.log(req.body)
+    const {
+      name,
+      description,
+      category,
+      subCategory,
+      subSubCategory,
+      tags,
+      original,
+      discounted,
+      stock,
+      hsnCode,
+      size,
+      shippingCharge,
+      imageGallery,
+      color,
+      gst,
+      sku,
+      calculationOnWeight,
+      weightType,
+      weight,
+      laborCost,
+      discountOnLaborCost,
+      isActive,
+      isProductPopular,
+      isProductNew,
+      filters,
+      material,
+      season,
+      productColor,
+    productSize,
+    } = req.body;
     const Id = req.params.id;
     const imageGalleryFiles = req.files;
     const productToUpdate = await Product.findById(Id);
 
+    const shouldRecalculatePrice =
+      req.body.calculationOnWeight === "true" &&
+      (req.body.weightType !== productToUpdate.weightType ||
+        req.body.weight !== productToUpdate.weight ||
+        req.body.discountOnLaborCost !== productToUpdate.discountOnLaborCost);
+
+    let calculatedPrice = productToUpdate.prices.calculatedPrice;
+
+    if (original !== productToUpdate.prices.original) {
+      // Recalculate the calculated price based on the new original price
+      calculatedPrice = original;
+    }
+
+    if (shouldRecalculatePrice) {
+      const priceUpdate = await PriceUpdate.findById(req.body.weightType);
+      calculatedPrice =
+        priceUpdate.price * req.body.weight +
+        req.body.weight * req.body.discountOnLaborCost;
+    }
+
     if (!productToUpdate) {
       return res.send({ error: "SubSubCategory not found" });
     }
+    let existingImageGallery = imageGallery || [];
     const productData = {
-      name: req.body.name,
-      description: req.body.description,
-      category: req.body.category,
-      subCategory: req.body.subCategory,
-      subSubCategory: req.body.subSubCategory ? req.body.subSubCategory : null,
-      prices: { original: req.body.original, discounted: req.body.discounted },
-      imageGallery: req.body.imageGallery,
-      stock: { quantity: req.body.stock },
-      sku: req.body.sku,
-      gst: req.body.gst,
-      isProductPopular: req.body.isProductPopular,
-      isProductNew: req.body.isProductNew,
-      isActive: req.body.isActive,
+      name: name,
+      description: description,
+      category: category,
+      subCategory: subCategory,
+      subSubCategory: subSubCategory,
+      tags: tags,
+      prices: {
+        original: original,
+        discounted: discounted,
+        calculatedPrice: calculatedPrice,
+      },
+      imageGallery: existingImageGallery,
+      stock: { quantity: stock },
+      hsnCode: hsnCode,
+      size: size,
+      shippingCharge: shippingCharge,
+      gst: gst,
+      sku: sku,
+      calculationOnWeight: calculationOnWeight,
+      weightType: weightType,
+      weight: weight,
+      laborCost: laborCost,
+      discountOnLaborCost: discountOnLaborCost ? discountOnLaborCost : null,
+      isActive: isActive,
+      isProductPopular: isProductPopular,
+      isProductNew: isProductNew,
+      filters: filters,
+      color: color,
+      material: material,
+      season: season,
+      productColor: productColor,
+      productSize: productSize,
     };
 
-    const addedImages = imageGalleryFiles.map((file) => file.filename);
+    let addedImages = imageGalleryFiles.map((file) => file.filename);
 
-    if (addedImages.length > 0) {
-      productData.imageGallery = productData.imageGallery.concat(addedImages);
+    if (!Array.isArray(addedImages)) {
+      addedImages = [addedImages];
+    }
+    if (!Array.isArray(existingImageGallery)) {
+      existingImageGallery = [existingImageGallery];
     }
 
-    console.log(addedImages);
+    console.log(addedImages, "481");
+    console.log(productData.imageGallery, "482");
+   
+
+    if (addedImages.length > 0) {
+      productData.imageGallery = existingImageGallery.concat(addedImages);
+    }
 
     await Product.findByIdAndUpdate(Id, productData);
     const UpdatedProduct = await Product.findById(Id);
 
     res.send({
       success: true,
-      msg: "SubSubCategory updated successfully",
+      msg: "Product updated successfully",
       data: UpdatedProduct,
     });
   } catch (error) {
@@ -482,6 +566,46 @@ const getProductsByTag = async (req, res) => {
   }
 };
 
+// Get Products by subCategory
+const getProductsBysubCategoryId = async (req, res) => {
+  const categoryId = req.params.id;
+
+  try {
+    const products = await Product.find({ subCategory: categoryId }).exec();
+
+    if (!products || products.length === 0) {
+      return res.send({
+        success: false,
+        message: "No products found for the specified category.",
+      });
+    }
+
+    return res.send({ success: true, products });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+  }
+};
+
+// Get Products by subSubCategory
+const getProductsBysubSubCategoryId = async (req, res) => {
+  const categoryId = req.params.id;
+
+  try {
+    const products = await Product.find({ subSubCategory: categoryId }).exec();
+
+    if (!products || products.length === 0) {
+      return res.send({
+        success: false,
+        message: "No products found for the specified category.",
+      });
+    }
+
+    return res.send({ success: true, products });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+  }
+};
+
 
 
 
@@ -497,4 +621,6 @@ module.exports = {
   getVarProductById,
   getAllVarProducts,
   getProductsByTag,
+  getProductsBysubCategoryId,
+  getProductsBysubSubCategoryId,
 };

@@ -4,6 +4,6 @@ const { newPayment, checkStatus } = require('../controllers/PaymentGatewayR');
 const router = express();
 
 router.post('/payment', newPayment);
-router.post('/status/:txnId', checkStatus);
+router.get('/status/:merchantId/:txnId', checkStatus);
 
 module.exports = router;

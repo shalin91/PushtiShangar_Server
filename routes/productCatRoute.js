@@ -7,6 +7,7 @@ const {
   updateCategoryById,
   deleteCategoryById,
   getAllCategories,
+  getSubCategoriesAndSubSubCategoriesByCategoryId,
 } = require("../controllers/productCatController");
 
 const router = express.Router();
@@ -40,5 +41,6 @@ router.post("/getcategories", getAllCategories);
 router.post("/getspecificcategory/:id", getCategoryById);
 router.post("/updatecategory/:id",upload.single("image"), updateCategoryById);
 router.post("/deletecategory/:id", deleteCategoryById);
+router.post("/getsubcategories/:id", getSubCategoriesAndSubSubCategoriesByCategoryId);
 
 module.exports = router;

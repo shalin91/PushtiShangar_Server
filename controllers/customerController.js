@@ -128,7 +128,6 @@ const getCustomers = async (req, res) => {
 };
 
 
-
 // Get LoggedIn Customer
 const getLoggedInCustomer = async (req, res) => {
   let customerId = req.body.id;
@@ -185,18 +184,13 @@ const updateCustomer = async (req, res) => {
   try {
     const CustomerId = req.params.id;
     console.log(CustomerId);
-    const { username, email, address, phone, active } = req.body;
+    const { username } = req.body;
   
     const updateData = await Customer.findByIdAndUpdate(
       CustomerId,
     {
-      username,
-      email,
-      address,
-      phone,
-      active,
-    },
-    {new : true}
+      username : username
+    }
     );
 
     if (!updateData) {
@@ -267,11 +261,12 @@ const updateCustomerPassword = async (req, res) => {
 const forgotCustomerPassword = async (req, res) => {
   let { email } = req.body;
   const customer = await Customer.findOne({ email });
+  
   if (!customer) {
-    res.send({ success: false, msg: "User does not exist" });
+    res.send({ success: false, msg: "Customer not found" });
   }
   // Delete Token if it exist in DB
-  await Token.findOneAndDelete({ userId: customer.id });
+  await Token.findOneAndDelete({ customerId: customer._id });
 
   // Create Rest Token
   let resetToken = crypto.randomBytes(32).toString("hex") + customer._id;
@@ -285,7 +280,7 @@ const forgotCustomerPassword = async (req, res) => {
 
   // /Save token to DB
   await new Token({
-    userId: customer.id,
+    customerId: customer.id,
     token: hashedToken,
     createdAt: Date.now(),
     expiresAt: Date.now() + 30 * (60 * 1000), //30 Minutes
@@ -293,6 +288,7 @@ const forgotCustomerPassword = async (req, res) => {
 
   // Construct Reset Url
   const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
+  console.log(resetUrl)
 
   // Reset Email
   const message = `
@@ -322,7 +318,9 @@ const resetCustomerPassword = async (req, res) => {
   const { password } = req.body;
   const { resetToken } = req.params;
 
-  // Hash token  then compare to Token in DB
+
+
+  // Hash token then compare to Token in DB
   const hashedToken = crypto
     .createHash("sha256")
     .update(resetToken)
@@ -334,21 +332,36 @@ const resetCustomerPassword = async (req, res) => {
     expiresAt: { $gt: Date.now() },
   });
 
+  console.log(customerToken);
+
   if (!customerToken) {
-    res.send("Invalid or Expired Token");
+    return res.send("Invalid or Expired Token");
   }
 
   // Find User
-  const customer = await Customer.findOne({ _id: customerToken.userId });
-  customer.password = password;
-  // console.log(customer);
-  customer.save();
+  const customer = await Customer.findById(customerToken.customerId);
 
-  res.send({
-    success: true,
-    msg: "Password Reset Successful,Please Login",
-  });
+  if (!customer) {
+    return res.send("Customer not found");
+  }
+
+  // Set the new password
+  customer.password = password;
+  
+  try {
+    // Save the updated customer document
+    await customer.save();
+
+    res.send({
+      success: true,
+      msg: "Password Reset Successful, Please Login",
+    });
+  } catch (error) {
+    console.error("Error saving customer password:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
 
 // Delete Specific Customer
 const DeleteCustomer = async (req, res, next) => {
@@ -763,6 +776,7 @@ const getOrderHistorybyCustomerId = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 const getCustomerReportByDateRange = async (req, res) => {
   try {

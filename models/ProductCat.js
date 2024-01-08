@@ -9,11 +9,6 @@ const categorySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  noOfProducts: {
-    type: Number,
-    default: 0,
-  },
-  
   isDeleted: {
     type: Boolean,
     default: false,

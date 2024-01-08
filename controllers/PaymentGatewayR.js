@@ -6,9 +6,9 @@ const axios = require('axios');
 // const {salt_key, merchant_id} = require('./secret')
 
 const newPayment = async (req, res) => {
-    const merchant_id = "PGTESTPAYUAT";
-    const salt_key = "099eb0cd-02cf-4e2a-8aca-3e6c6aff0399";
-    const url = `${process.env.BACKEND_URL}`;
+    const merchant_id = "M22VUO6F0UCZI";
+    const salt_key = "b08aa1a4-66d7-42b5-a8df-9df382f87a58";
+    // const url = "https://pushtishangar.com";
 
     try {
         const merchantTransactionId = req.body.transactionId;
@@ -18,7 +18,7 @@ const newPayment = async (req, res) => {
             merchantUserId: req.body.MUID,
             name: req.body.name,
             amount: req.body.amount * 100,
-            redirectUrl: `${url}/api/status/${merchantTransactionId}`,
+            redirectUrl: "/",
             redirectMode: 'POST',
             mobileNumber: req.body.number,
             paymentInstrument: {
@@ -33,7 +33,7 @@ const newPayment = async (req, res) => {
         const sha256 = crypto.createHash('sha256').update(string).digest('hex');
         const checksum = sha256 + '###' + keyIndex;
 
-        const prod_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+        const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
         const options = {
             method: 'POST',
             url: prod_URL,
@@ -71,8 +71,8 @@ const newPayment = async (req, res) => {
 };
 
 const checkStatus = async(req, res) => {
-    const merchantTransactionId = res.req.body.transactionId
-    const merchantId = res.req.body.merchantId
+    const merchantTransactionId = req.params.txnId
+    const merchantId = req.params.merchantId
 
     const keyIndex = 1;
     const string = `/pg/v1/status/${merchantId}/${merchantTransactionId}` + salt_key;
@@ -91,17 +91,19 @@ const checkStatus = async(req, res) => {
     };
 
     // CHECK PAYMENT TATUS
-    axios.request(options).then(async(response) => {
-        if (response.data.success === true) {
-            // const url = `http://localhost:3000/success`
-            // return res.redirect(url)
-        } else {
-            // const url = `http://localhost:3000/failure`
-            // return res.redirect(url)
-        }
+    axios.request(options)
+    .then(async (response) => {
+      if (response.data.success === true) {
+        // Payment successful
+        res.status(200).json({ success: true, message: 'Payment successful' });
+      } else {
+        // Payment failed
+        res.status(400).json({ success: false, message: 'Payment failed' });
+      }
     })
     .catch((error) => {
-        console.error(error);
+      console.error(error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
     });
 };
 

@@ -1,4 +1,8 @@
-const Category = require('../models/ProductCat'); // Import the Category model
+const Category = require('../models/ProductCat');
+const subCategory = require('../models/ProductSubCat');
+const subSubCategory = require('../models/ProductSubSubCat');
+const mongoose = require('mongoose');
+
 
 // Create a new category
 
@@ -7,8 +11,8 @@ exports.createCategory = async (req, res) => {
   const body = {
     name: req.body.name,
     description: req.body.description,
-    noOfProducts: req.body.noOfProducts,
     image: req.file ? req.file.filename : "",
+    isActive : req.body.isActive,
   };
   console.log(body)
   const ItemIsUnique =
@@ -72,8 +76,9 @@ exports.updateCategoryById = async (req, res, next) => {
     const updateData = {
       name: req.body.name,
       description: req.body.description,
-    noOfProducts: req.body.noOfProducts,
       image: req.file ? req.file.filename : categoryToUpdate.image, 
+      isActive : req.body.isActive,
+
     };
 
     await Category.findByIdAndUpdate(categoryId, updateData);
@@ -118,3 +123,52 @@ exports.getAllDeletedCategories = async (req, res) => {
     return res.send({ error: 'Server error' });
   }
 };
+
+
+// Get subcategories and subsubcategories by categoryId
+exports.getSubCategoriesAndSubSubCategoriesByCategoryId = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    // Use aggregation to get subcategories and their corresponding subsubcategories
+    const result = await subSubCategory.aggregate([
+      {
+        $match: {
+          Category: new mongoose.Types.ObjectId(categoryId),
+          isDeleted: false, // Optionally, include this condition if needed
+        },
+      },
+      {
+        $lookup: {
+          from: 'subcategories', // Adjust based on your actual collection name
+          localField: 'SubCategory',
+          foreignField: '_id',
+          as: 'subCategory',
+        },
+      },
+      {
+        $unwind: '$subCategory',
+      },
+      {
+        $group: {
+          _id: '$SubCategory',
+          subCategoryName: { $first: '$subCategory.name' },
+          subSubCategories: {
+            $push: {
+              id: '$_id',
+              name: '$name',
+            },
+          },
+        },
+      },
+    ]);
+
+    res.send({
+      success: true,
+      categoriesWithSubCategoriesAndSubSubCategories: result,
+    });
+  } catch (error) {
+    res.send({ success: false, error: error.message });
+  }
+};
+

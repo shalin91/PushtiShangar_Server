@@ -50,7 +50,7 @@ const User = require("./models/User");
 // MIDDLEWARES
 connectToMongo();
 const app = express();
-const port = 5002;
+const port =  process.env.PORT || 5005;
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

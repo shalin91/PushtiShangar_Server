@@ -6,7 +6,7 @@ exports.addSubCategory = async (req, res, next) => {
       const body = {
         name: req.body.name, // Replace 'name' with the field for the sub-category name
         Category: req.body.Category, // Replace 'Category' with the field for the category reference
-        
+        isActive : req.body.isActive,
       };
   
       const newSubCategory = await SubCategory.create(body);
@@ -83,7 +83,7 @@ exports.updateSubCategoryById = async (req, res, next) => {
 
     const updateData = {
       name: req.body.name,
-
+      isActive : req.body.isActive,
       // Add more fields as needed
     };
 

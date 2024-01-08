@@ -224,7 +224,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   let { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    return res.send({ success: false, msg: "User does not exist" });
+    return res.send({ success: false, msg: "User  not found" });
   }
   // Delete Token if it exist in DB
   await Token.findOneAndDelete({ userId: user.id });

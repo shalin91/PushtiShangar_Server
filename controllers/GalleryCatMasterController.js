@@ -71,13 +71,8 @@ exports.updateGallaryCat = async (req, res, next) => {
 };
 
 exports.deleteGallaeyCat = async (req, res, next) => {
-  const record = await gallaryCategoryModel.findByIdAndUpdate(
+  const record = await gallaryCategoryModel.findByIdAndDelete(
     req.params.id,
-    {
-      deleted: true,
-      deletedAt: new Date(),
-    },
-    { new: true }
   );
 
   if (!record) {
