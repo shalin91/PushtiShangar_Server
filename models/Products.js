@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema({
     discounted: { type: Number },
     calculatedPrice: { type: Number },
   },
-  imageGallery: { type: Array },
+  imageGallery: { type: Array ,default:[]},
   stock: {
     quantity: { type: Number },
   },

@@ -147,13 +147,6 @@ const addVarProduct = async (req, res, next) => {
 
   const imageGalleryFiles = req.files;
 
-  // if (!imageGalleryFiles || imageGalleryFiles.length === 0) {
-  //   return res.status(400).send({
-  //     success: false,
-  //     error: "Main image and image gallery files are required.",
-  //   });
-  // }
-
   const imageGallery = imageGalleryFiles.map((file) => file.filename);
 
   let calculatedPrice = 0;
