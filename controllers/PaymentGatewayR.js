@@ -18,7 +18,7 @@ const newPayment = async (req, res) => {
             merchantUserId: req.body.MUID,
             name: req.body.name,
             amount: req.body.amount * 100,
-            redirectUrl: "/",
+            redirectUrl: `https://server.pushtishangar.com/api/status/${merchantTransactionId}`,
             redirectMode: 'POST',
             mobileNumber: req.body.number,
             paymentInstrument: {
@@ -53,7 +53,7 @@ const newPayment = async (req, res) => {
             const url = response.data.data.instrumentResponse.redirectInfo.url;
             console.log("Response of payment:", response.data);
             console.log("Data:", response.data.data.instrumentResponse);
-            res.status(200).json({ url: url });
+            return res.status(200).json({  url:url});
         } else {
             console.error("Payment request failed:", response.data);
             res.status(500).json({
@@ -70,42 +70,51 @@ const newPayment = async (req, res) => {
     }
 };
 
-const checkStatus = async(req, res) => {
-    const merchantTransactionId = req.params.txnId
-    const merchantId = req.params.merchantId
+const checkStatus = async (req, res) => {
+    try {
+        const merchantTransactionId = res.req.body.transactionId;
+        const merchantId = res.req.body.merchantId;
 
-    const keyIndex = 1;
-    const string = `/pg/v1/status/${merchantId}/${merchantTransactionId}` + salt_key;
-    const sha256 = crypto.createHash('sha256').update(string).digest('hex');
-    const checksum = sha256 + "###" + keyIndex;
+        const keyIndex = 1;
+        const string = `/pg/v1/status/${merchantId}/${merchantTransactionId}` + salt_key;
+        const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+        const checksum = sha256 + "###" + keyIndex;
 
-    const options = {
-    method: 'GET',
-    url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${merchantTransactionId}`,
-    headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-VERIFY': checksum,
-        'X-MERCHANT-ID': `${merchantId}`
+        const options = {
+            method: 'GET',
+            url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${merchantTransactionId}`,
+            headers: {
+                accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-VERIFY': checksum,
+                'X-MERCHANT-ID': `${merchantId}`
+            }
+        };
+
+        const response = await axios.request(options);
+
+        if (response.data.success === true) {
+            return res.redirect(getSuccessRedirectURL());
+        } else {
+            return res.redirect(getFailureRedirectURL());
+        }
+    } catch (error) {
+        console.error("Error in checkStatus:", error);
+        // Handle specific types of errors or log details for debugging
+        return res.status(500).send("Internal Server Error");
     }
-    };
-
-    // CHECK PAYMENT TATUS
-    axios.request(options)
-    .then(async (response) => {
-      if (response.data.success === true) {
-        // Payment successful
-        res.status(200).json({ success: true, message: 'Payment successful' });
-      } else {
-        // Payment failed
-        res.status(400).json({ success: false, message: 'Payment failed' });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    });
 };
+
+const getSuccessRedirectURL = () => {
+    
+    return `https://pushtishangar.com/success`;
+};
+
+const getFailureRedirectURL = () => {
+    
+    return `https://pushtishangar.com/failure`;
+};
+
 
 module.exports = {
     newPayment,

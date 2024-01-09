@@ -351,7 +351,7 @@ const getAllProducts = async (req, res) => {
       console.log("maxPrice:", maxPrice);
     }
 
-    // Use the filter object in the query to fetch products
+    
     const products = await Product.find(filter).exec();
 
     return res.send({ success: true, products });

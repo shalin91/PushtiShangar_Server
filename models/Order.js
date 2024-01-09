@@ -97,7 +97,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ["COD", "Net Banking", "PayPal", "UPI"],
+    enum: ["COD","UPI"],
     default: "COD",
   },
   couponCode: {
