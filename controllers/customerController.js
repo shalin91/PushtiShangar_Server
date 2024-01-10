@@ -10,6 +10,7 @@ const sendEmail = require("../utils/sendEmail");
 const Product = require("../models/Products");
 const gstModel = require('../models/Gst');
 const PriceUpdate = require("../models/PriceUpdate");
+const Stock = require("../models/Stock")
 
 
 
@@ -443,6 +444,41 @@ const addToCart = async (req, res) => {
 };
 
 // GetLoggedInCustomer's Cart Item
+// const getLoggedInCustomerCartItems = async (req, res) => {
+//   const customerId = req.params.id; 
+
+//   try {
+//     const customer = await Customer.findById(customerId).populate(
+//       "cartItems.product"
+//     );
+
+//     if (!customer) {
+//       return res.status(404).json({
+//         success: false,
+//         msg: "Customer not found",
+//       });
+//     }
+
+    
+//     const cartItems = customer.cartItems.map((item) => ({
+//       product: item.product,
+//       quantity: item.quantity,
+//       tax:item.tax,
+//       Stock : item.stock,
+//     }));
+
+//     return res.send({
+//       success: true,
+//       cartItems,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.send({
+//       success: false,
+//       msg: "Internal Server Error",
+//     });
+//   }
+// };
 const getLoggedInCustomerCartItems = async (req, res) => {
   const customerId = req.params.id; // Customer ID
 
@@ -459,13 +495,20 @@ const getLoggedInCustomerCartItems = async (req, res) => {
       });
     }
 
-    // Extract relevant cart information with complete product details
-    const cartItems = customer.cartItems.map((item) => ({
-      product: item.product,
-      quantity: item.quantity,
-      tax:item.tax,
+  
+    const cartItems = await Promise.all(
+      customer.cartItems.map(async (item) => {
+      
+        const stock = await Stock.findOne({ ProductId: item.product._id });
 
-    }));
+        return {
+          product: item.product,
+          quantity: item.quantity,
+          tax: item.tax,
+          stock: stock || null, 
+        };
+      })
+    );
 
     return res.send({
       success: true,
@@ -479,7 +522,6 @@ const getLoggedInCustomerCartItems = async (req, res) => {
     });
   }
 };
-
 // Remove a product from the customer's cart
 const removeFromCart = async (req, res) => {
   const customerId = req.params.id; // Customer ID

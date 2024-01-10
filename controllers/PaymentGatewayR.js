@@ -8,7 +8,6 @@ const axios = require('axios');
 const newPayment = async (req, res) => {
     const merchant_id = "M22VUO6F0UCZI";
     const salt_key = "b08aa1a4-66d7-42b5-a8df-9df382f87a58";
-    // const url = "https://pushtishangar.com";
 
     try {
         const merchantTransactionId = req.body.transactionId;
@@ -20,7 +19,7 @@ const newPayment = async (req, res) => {
             amount: req.body.amount * 100,
             redirectUrl: `https://server.pushtishangar.com/api/status/${merchantTransactionId}`,
             redirectMode: 'POST',
-            mobileNumber: req.body.number,
+            mobileNumber: req.body.number.toString(),
             paymentInstrument: {
                 type: 'PAY_PAGE'
             }
@@ -100,7 +99,7 @@ const checkStatus = async (req, res) => {
         }
     } catch (error) {
         console.error("Error in checkStatus:", error);
-        // Handle specific types of errors or log details for debugging
+    
         return res.status(500).send("Internal Server Error");
     }
 };
